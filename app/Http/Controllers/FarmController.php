@@ -32,6 +32,7 @@ class FarmController extends Controller
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
             'lokasi' => 'required|string|max:255',
+            'telepon' => 'nullable|string|max:50',
         ]);
 
         Farm::create($validated);
@@ -48,6 +49,7 @@ class FarmController extends Controller
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
             'lokasi' => 'required|string|max:255',
+            'telepon' => 'nullable|string|max:50',
         ]);
 
         $farm->update($validated);

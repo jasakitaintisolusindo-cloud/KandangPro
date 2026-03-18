@@ -9,6 +9,7 @@ class Farm extends Model
     protected $fillable = [
         'nama',
         'lokasi',
+        'telepon',
     ];
 
     public function coops()

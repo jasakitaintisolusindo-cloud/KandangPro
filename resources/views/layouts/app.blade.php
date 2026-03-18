@@ -14,7 +14,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <!-- Left: Logo & Title -->
-                <div class="flex items-center flex-1">
+                <div class="flex items-center flex-shrink-0">
                     <div class="flex-shrink-0 flex items-center space-x-3">
                         <img src="{{ asset('images/logo.png') }}" alt="KandangPRO Logo"
                             class="w-auto h-12 object-contain bg-white rounded-lg shadow-sm">
@@ -31,7 +31,7 @@
                 </div>
 
                 <!-- Center: Navigation Links -->
-                <div class="hidden sm:flex items-center justify-center flex-1">
+                <div class="flex items-center justify-center flex-1 px-4 overflow-x-auto whitespace-nowrap hide-scroll">
                     <div class="flex space-x-4 lg:space-x-6">
                         <a href="{{ route('dashboard.index') }}"
                             class="{{ request()->routeIs('dashboard.index') ? 'border-emerald-500 text-emerald-700' : 'border-transparent text-gray-600 hover:border-emerald-500 hover:text-emerald-700' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-bold transition-all duration-200 whitespace-nowrap">
@@ -61,7 +61,7 @@
                 </div>
 
                 <!-- Right: Date & Profile -->
-                <div class="flex items-center justify-end space-x-1 sm:space-x-3 lg:space-x-4 flex-1">
+                <div class="flex items-center justify-end space-x-1 sm:space-x-3 lg:space-x-4 flex-shrink-0">
                     <span
                         class="text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100 hidden 2xl:inline-block whitespace-nowrap">
                         {{ date('d F Y') }}
@@ -95,6 +95,7 @@
                     @endauth
                 </div>
             </div>
+        </div>
     </nav>
 
     <!-- Main Content -->
@@ -184,6 +185,15 @@
 
         .animate-fade-in {
             animation: fade-in 0.3s ease-out;
+        }
+
+        /* Hide scrollbar for nav container */
+        .hide-scroll::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scroll {
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
         }
     </style>
     @stack('scripts')

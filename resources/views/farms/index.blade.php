@@ -60,6 +60,8 @@
                                 Peternakan</th>
                             <th class="px-6 py-4 text-left text-xs font-black text-slate-500 uppercase tracking-widest">
                                 Lokasi</th>
+                            <th class="px-6 py-4 text-left text-xs font-black text-slate-500 uppercase tracking-widest">
+                                Telepon</th>
                             <th class="px-6 py-4 text-center text-xs font-black text-slate-500 uppercase tracking-widest">
                                 Jumlah Kandang</th>
                             <th class="px-6 py-4 text-center text-xs font-black text-slate-500 uppercase tracking-widest">
@@ -74,6 +76,9 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="text-sm font-medium text-slate-600">{{ $farm->lokasi }}</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="text-sm font-medium text-slate-600">{{ $farm->telepon ?? '-' }}</span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                     <span
@@ -181,6 +186,13 @@
                                 <input type="text" name="lokasi" id="lokasi" required placeholder="Contoh: Yogyakarta"
                                     class="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:border-transparent transition-all font-bold text-slate-700">
                             </div>
+
+                            <!-- Telepon -->
+                            <div>
+                                <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Telepon</label>
+                                <input type="text" name="telepon" id="telepon" placeholder="Contoh: 081234567890"
+                                    class="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:border-transparent transition-all font-bold text-slate-700">
+                            </div>
                         </div>
                     </div>
 
@@ -227,6 +239,7 @@
 
             document.getElementById('nama').value = farm.nama;
             document.getElementById('lokasi').value = farm.lokasi;
+            document.getElementById('telepon').value = farm.telepon || '';
 
             modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
