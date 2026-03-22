@@ -14,12 +14,6 @@ class SupplyController extends Controller
     public function __construct(\App\Services\StockService $stockService)
     {
         $this->stockService = $stockService;
-        $this->middleware(function ($request, $next) {
-            if (!auth()->user()->canAccess('supplies')) {
-                abort(403, 'Anda tidak memiliki hak akses ke halaman Master Inventaris.');
-            }
-            return $next($request);
-        });
     }
 
     public function index()

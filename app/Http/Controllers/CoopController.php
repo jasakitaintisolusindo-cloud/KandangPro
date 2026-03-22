@@ -11,15 +11,6 @@ use Illuminate\Support\Str;
 
 class CoopController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(function ($request, $next) {
-            if (!auth()->user()->canAccess('coops')) {
-                abort(403, 'Anda tidak memiliki hak akses ke halaman Master Kandang.');
-            }
-            return $next($request);
-        });
-    }
 
     /**
      * Display a listing of the resource.

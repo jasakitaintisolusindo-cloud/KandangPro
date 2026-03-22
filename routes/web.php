@@ -46,13 +46,29 @@ Route::middleware('auth')->group(function () {
     Route::resource('daily-reports', DailyReportController::class)->names('daily-reports');
 
     // Coops & Farms
-    Route::resource('farms', \App\Http\Controllers\FarmController::class);
-    Route::resource('coops', CoopController::class)->names('coops');
-    Route::post('/coops/{coop}/snapshot', [CoopController::class, 'saveSnapshot'])->name('coops.snapshot');
+    Route::middleware(function ($request, $next) {
+        if (!auth()->user()->canAccess('farms')) abort(403, 'Anda tidak memiliki hak akses ke halaman Master Peternakan.');
+        return $next($request);
+    })->group(function () {
+        Route::resource('farms', \App\Http\Controllers\FarmController::class);
+    });
+
+    Route::middleware(function ($request, $next) {
+        if (!auth()->user()->canAccess('coops')) abort(403, 'Anda tidak memiliki hak akses ke halaman Master Kandang.');
+        return $next($request);
+    })->group(function () {
+        Route::resource('coops', CoopController::class)->names('coops');
+        Route::post('/coops/{coop}/snapshot', [CoopController::class, 'saveSnapshot'])->name('coops.snapshot');
+    });
 
     // Supply & Stock Routes
-    Route::get('/supplies/transactions', [SupplyController::class, 'transactions'])->name('supplies.transactions');
-    Route::post('/supplies/{supply}/stock-in', [SupplyController::class, 'stockIn'])->name('supplies.stock-in');
-    Route::post('/supplies/{supply}/stock-out', [SupplyController::class, 'stockOut'])->name('supplies.stock-out');
-    Route::resource('supplies', SupplyController::class)->names('supplies');
+    Route::middleware(function ($request, $next) {
+        if (!auth()->user()->canAccess('supplies')) abort(403, 'Anda tidak memiliki hak akses ke halaman Master Inventaris.');
+        return $next($request);
+    })->group(function () {
+        Route::get('/supplies/transactions', [SupplyController::class, 'transactions'])->name('supplies.transactions');
+        Route::post('/supplies/{supply}/stock-in', [SupplyController::class, 'stockIn'])->name('supplies.stock-in');
+        Route::post('/supplies/{supply}/stock-out', [SupplyController::class, 'stockOut'])->name('supplies.stock-out');
+        Route::resource('supplies', SupplyController::class)->names('supplies');
+    });
 });
