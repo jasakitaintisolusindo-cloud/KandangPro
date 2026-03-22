@@ -69,7 +69,7 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
-                        @forelse($farms as $farm)
+                        @forelse ($farms as $farm)
                             <tr class="hover:bg-slate-50/50 transition-colors">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="text-sm font-black text-slate-700">{{ $farm->nama }}</span>

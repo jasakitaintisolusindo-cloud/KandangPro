@@ -56,6 +56,11 @@
                                             <input type="number" step="0.01" name="{{ $setting->key }}"
                                                 id="{{ $setting->key }}" value="{{ $setting->value }}"
                                                 class="block w-full px-4 py-3 bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-400 font-medium">
+                                        @elseif($setting->type == 'boolean')
+                                            <select name="{{ $setting->key }}" id="{{ $setting->key }}" class="block w-full px-4 py-3 bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-medium">
+                                                <option value="1" {{ $setting->value == '1' ? 'selected' : '' }}>✅ Akses Terbuka</option>
+                                                <option value="0" {{ $setting->value == '0' ? 'selected' : '' }}>❌ Akses Ditutup</option>
+                                            </select>
                                         @else
                                             <input type="text" name="{{ $setting->key }}" id="{{ $setting->key }}"
                                                 value="{{ $setting->value }}"
@@ -105,7 +110,7 @@
                                 <tr class="border-b border-slate-100">
                                     <th class="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Nama Lengkap</th>
                                     <th class="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Email</th>
-                                    <th class="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
+                                    <th class="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Hak Akses</th>
                                     <th class="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Aksi</th>
                                 </tr>
                             </thead>
@@ -122,7 +127,11 @@
                                         </td>
                                         <td class="px-4 py-5 text-sm text-slate-500 font-medium">{{ $user->email }}</td>
                                         <td class="px-4 py-5">
-                                            <span class="px-3 py-1 bg-emerald-100 text-emerald-600 text-[10px] font-black uppercase rounded-full">Aktif</span>
+                                            @if($user->isManager())
+                                                <span class="px-3 py-1 bg-indigo-100 text-indigo-700 text-[10px] font-black uppercase rounded-full">Manager</span>
+                                            @else
+                                                <span class="px-3 py-1 bg-teal-100 text-teal-700 text-[10px] font-black uppercase rounded-full">Petugas</span>
+                                            @endif
                                         </td>
                                         <td class="px-4 py-5 text-right">
                                             <div class="flex justify-end gap-2">
@@ -205,6 +214,13 @@
                         <input type="email" name="email" required placeholder="budi@example.com"
                             class="block w-full px-4 py-3 bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-400 font-medium">
                     </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-slate-700 ml-1">Hak Akses (Role)</label>
+                        <select name="role" required class="block w-full px-4 py-3 bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-medium">
+                            <option value="petugas">Petugas (Staff)</option>
+                            <option value="manager">Manager / Super Admin</option>
+                        </select>
+                    </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="space-y-2">
                             <label class="block text-sm font-bold text-slate-700 ml-1">Password</label>
@@ -255,6 +271,13 @@
                         <label class="block text-sm font-bold text-slate-700 ml-1">Email</label>
                         <input type="email" name="email" id="edit-user-email" required
                             class="block w-full px-4 py-3 bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-medium">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-slate-700 ml-1">Hak Akses (Role)</label>
+                        <select name="role" id="edit-user-role" required class="block w-full px-4 py-3 bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-medium">
+                            <option value="petugas">Petugas (Staff)</option>
+                            <option value="manager">Manager / Super Admin</option>
+                        </select>
                     </div>
                     
                     <div class="p-4 bg-orange-50 rounded-2xl border border-orange-100">
@@ -324,6 +347,7 @@
                 // Set values
                 document.getElementById('edit-user-name').value = user.name;
                 document.getElementById('edit-user-email').value = user.email;
+                document.getElementById('edit-user-role').value = user.role;
                 
                 modal.classList.remove('hidden');
                 document.body.classList.add('overflow-hidden');

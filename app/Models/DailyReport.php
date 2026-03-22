@@ -11,16 +11,24 @@ class DailyReport extends Model
         'supply_id',
         'tanggal',
         'produksi_telur_kg',
+        'foto_produksi',
         'jumlah_telur_butir',
         'harga_telur_per_kg',
         'pakan_kg',
         'harga_pakan_per_kg',
         'biaya_lain_lain',
         'jumlah_kematian',
+        'foto_kematian',
         'keterangan',
         'total_pendapatan_telur',
         'total_biaya_pakan',
         'keuntungan_bersih',
+        'status',
+        'rejection_note',
+        'created_by',
+        'verified_by',
+        'verified_at',
+        'audit_logs',
     ];
 
     protected $casts = [
@@ -33,6 +41,8 @@ class DailyReport extends Model
         'total_pendapatan_telur' => 'decimal:2',
         'total_biaya_pakan' => 'decimal:2',
         'keuntungan_bersih' => 'decimal:2',
+        'verified_at' => 'datetime',
+        'audit_logs' => 'array',
     ];
 
     public function coop()
@@ -43,5 +53,15 @@ class DailyReport extends Model
     public function supply()
     {
         return $this->belongsTo(Supply::class);
+    }
+    
+    public function verifiedBy()
+    {
+        return $this->belongsTo(User::class, 'verified_by');
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

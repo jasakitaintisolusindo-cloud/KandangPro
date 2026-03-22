@@ -11,7 +11,7 @@
                 <p class="mt-2 text-sm text-gray-600">Perbarui data produksi dan keuangan harian peternakan</p>
             </div>
 
-            <form action="{{ route('daily-reports.update', $dailyReport) }}" method="POST" class="space-y-6">
+            <form action="{{ route('daily-reports.update', $dailyReport) }}" id="reportForm" method="POST" enctype="multipart/form-data" class="space-y-6">
                 @csrf
                 @method('PUT')
 
@@ -234,6 +234,27 @@
                                         </div>
                                     </div>
 
+                                    <!-- Upload Bukti Fisik -->
+                                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 mt-4">
+                                        <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-3">Bukti Fisik & Anti-Fraud</h3>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-[10px] font-semibold text-gray-600 mb-1">Foto Timbangan / Produksi</label>
+                                                @if($dailyReport->foto_produksi)
+                                                    <div class="mb-2"><a href="{{ Storage::url($dailyReport->foto_produksi) }}" target="_blank" class="text-xs text-blue-600 underline font-semibold">Lihat Foto Saat Ini</a></div>
+                                                @endif
+                                                <input type="file" name="foto_produksi" id="foto_produksi" accept="image/*" class="w-full text-xs bg-white border border-slate-200 rounded p-1">
+                                            </div>
+                                            <div>
+                                                <label class="block text-[10px] font-semibold text-gray-600 mb-1">Foto Bukti Kematian</label>
+                                                @if($dailyReport->foto_kematian)
+                                                    <div class="mb-2"><a href="{{ Storage::url($dailyReport->foto_kematian) }}" target="_blank" class="text-xs text-blue-600 underline font-semibold">Lihat Foto Saat Ini</a></div>
+                                                @endif
+                                                <input type="file" name="foto_kematian" id="foto_kematian" accept="image/*" class="w-full text-xs bg-white border border-slate-200 rounded p-1">
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <!-- Action Buttons -->
                                     <div class="flex gap-4 pt-6 border-t border-gray-200">
                                         <button type="submit"
@@ -274,6 +295,31 @@
             keuntunganElement.textContent = 'Rp ' + keuntungan.toLocaleString('id-ID');
             keuntunganElement.className = 'text-2xl font-bold ' + (keuntungan >= 0 ? 'text-emerald-700' : 'text-red-700');
         }
+
+        // Anti-Fraud FCR Validation Logic
+        document.getElementById('reportForm').addEventListener('submit', function(e) {
+            const produksi = parseFloat(document.getElementById('produksi_telur_kg').value) || 0;
+            const pakan = parseFloat(document.getElementById('pakan_kg').value) || 0;
+            const kematian = parseInt(document.getElementById('jumlah_kematian').value) || 0;
+            const fotoKematianInput = document.getElementById('foto_kematian').files.length;
+            const hasExistingFotoMati = {{ $dailyReport->foto_kematian ? 'true' : 'false' }};
+            
+            if (kematian > 0 && fotoKematianInput === 0 && !hasExistingFotoMati) {
+                e.preventDefault();
+                alert(`⚠️ PERINGATAN ANTI-FRAUD ⚠️\n\nAnda merubah/melaporkan angka ${kematian} kematian tanpa Bukti Foto!\nMohon upload foto bukti kematian yang sesuai.`);
+                return;
+            }
+
+            if (produksi > 0) {
+                const fcr = pakan / produksi;
+                if (fcr > 2.5) {
+                    e.preventDefault();
+                    if(confirm(`⚠️ PERINGATAN ANTI-FRAUD ⚠️\n\nAngka FCR sangat tidak wajar (${fcr.toFixed(2)}).\nIni mengindikasikan pakan boros atau produksi anomali. Apakah Anda yakin data ini merepresentasikan keadaan lapangan yang sebenarnya?`)) {
+                        this.submit();
+                    }
+                }
+            }
+        });
 
         // Initialize calculation on page load
         document.addEventListener('DOMContentLoaded', calculateTotals);

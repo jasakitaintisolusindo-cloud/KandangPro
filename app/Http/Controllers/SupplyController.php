@@ -14,6 +14,12 @@ class SupplyController extends Controller
     public function __construct(\App\Services\StockService $stockService)
     {
         $this->stockService = $stockService;
+        $this->middleware(function ($request, $next) {
+            if (!auth()->user()->canAccess('supplies')) {
+                abort(403, 'Anda tidak memiliki hak akses ke halaman Master Inventaris.');
+            }
+            return $next($request);
+        });
     }
 
     public function index()
@@ -37,6 +43,8 @@ class SupplyController extends Controller
             'konversi' => 'required|numeric|min:1',
             'stok_minimal' => 'required|numeric|min:0',
         ]);
+        $validated['stok_saat_ini'] = 0;
+        $validated['harga_terakhir'] = 0;
 
         Supply::create($validated);
 

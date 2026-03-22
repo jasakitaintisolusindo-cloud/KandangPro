@@ -110,7 +110,7 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
-                        @forelse($coops as $coop)
+                        @forelse ($coops as $coop)
                             <tr class="hover:bg-slate-50/50 transition-colors">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="text-sm font-black text-slate-700 uppercase tracking-tight">{{ $coop->kode_kandang }}</span>

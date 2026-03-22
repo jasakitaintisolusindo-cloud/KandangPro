@@ -11,7 +11,7 @@
                 <p class="mt-2 text-sm text-gray-600">Masukkan data produksi dan keuangan harian peternakan</p>
             </div>
 
-            <form action="{{ route('daily-reports.store') }}" method="POST" class="space-y-6">
+            <form action="{{ route('daily-reports.store') }}" id="reportForm" method="POST" enctype="multipart/form-data" class="space-y-6">
                 @csrf
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -161,6 +161,24 @@
                     </div>
                 </div>
 
+                <!-- Upload Bukti Fisik (Anti-Fraud) -->
+                <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 space-y-4">
+                    <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center">
+                        <svg class="w-4 h-4 mr-2 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        Bukti Fisik & Anti-Fraud
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="foto_produksi" class="block text-xs font-semibold text-gray-600 mb-1">Foto Timbangan / Produksi</label>
+                            <input type="file" name="foto_produksi" id="foto_produksi" accept="image/*" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 transition-all bg-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+                        </div>
+                        <div>
+                            <label for="foto_kematian" class="block text-xs font-semibold text-gray-600 mb-1">Foto B. Kematian (Wajib jika ada mati)</label>
+                            <input type="file" name="foto_kematian" id="foto_kematian" accept="image/*" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 transition-all bg-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-slate-50 file:text-slate-700 hover:file:bg-slate-100">
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Biaya Lain-lain -->
                 <div>
                     <label for="biaya_lain_lain" class="block text-sm font-semibold text-gray-700 mb-2">
@@ -261,6 +279,31 @@
             keuntunganElement.textContent = 'Rp ' + keuntungan.toLocaleString('id-ID');
             keuntunganElement.className = 'text-2xl font-bold ' + (keuntungan >= 0 ? 'text-emerald-700' : 'text-red-700');
         }
+
+        // Anti-Fraud FCR Validation Logic
+        document.getElementById('reportForm').addEventListener('submit', function(e) {
+            const produksi = parseFloat(document.getElementById('produksi_telur_kg').value) || 0;
+            const pakan = parseFloat(document.getElementById('pakan_kg').value) || 0;
+            const kematian = parseInt(document.getElementById('jumlah_kematian').value) || 0;
+            const fotoKematian = document.getElementById('foto_kematian').files.length;
+            
+            // Require photo if mortality > 0
+            if (kematian > 0 && fotoKematian === 0) {
+                e.preventDefault();
+                alert(`⚠️ PERINGATAN ANTI-FRAUD ⚠️\n\nAnda melaporkan ${kematian} ekor kematian. Anda WAJIB melampirkan Foto Bukti Kematian!`);
+                return;
+            }
+
+            if (produksi > 0) {
+                const fcr = pakan / produksi;
+                if (fcr > 2.5) {
+                    e.preventDefault();
+                    if(confirm(`⚠️ PERINGATAN ANTI-FRAUD ⚠️\n\nAngka FCR sangat tidak wajar (${fcr.toFixed(2)}).\nIni mengindikasikan pakan boros atau produksi anomali. Apakah Anda yakin data yang diinput sudah benar sesuai fisik lapangan?`)) {
+                        this.submit();
+                    }
+                }
+            }
+        });
 
         // Initialize calculation on page load
         document.addEventListener('DOMContentLoaded', calculateTotals);

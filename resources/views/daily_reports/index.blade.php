@@ -87,6 +87,8 @@
                                 Tanggal</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
                                 Kandang</th>
+                            <th class="px-6 py-4 text-center text-xs font-semibold text-white uppercase tracking-wider">
+                                Status</th>
                             <th class="px-6 py-4 text-right text-xs font-semibold text-white uppercase tracking-wider">
                                 Produksi (kg)</th>
                             <th class="px-6 py-4 text-right text-xs font-semibold text-white uppercase tracking-wider">
@@ -104,7 +106,7 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($reports as $report)
+                        @forelse ($reports as $report)
                             <tr class="hover:bg-emerald-50 transition-colors duration-150">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     {{ $report->tanggal->format('d/m/Y') }}
@@ -112,6 +114,28 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm font-medium text-gray-900">{{ $report->coop->kode_kandang }}</div>
                                     <div class="text-xs text-gray-500">{{ $report->coop->farm->nama_peternakan }}</div>
+                                    <div class="mt-1 text-[10px] text-gray-400">
+                                        <i class="fas fa-pencil-alt mr-1"></i>Input: <span class="font-semibold">{{ $report->creator->name ?? 'Sistem' }}</span>
+                                        @if($report->verifiedBy)
+                                        | <i class="fas fa-check-double ml-1 mr-1 text-emerald-500"></i>Approve: <span class="font-semibold">{{ $report->verifiedBy->name }}</span>
+                                        @endif
+                                    </div>
+                                    @if($report->status == 'rejected')
+                                        <div class="mt-1 flex items-center text-[10px] text-red-600 max-w-[150px]" title="{{ $report->rejection_note }}">
+                                            <i class="fas fa-info-circle mr-1"></i> <span class="truncate font-medium">{{ $report->rejection_note }}</span>
+                                        </div>
+                                    @elseif($report->status == 'approved')
+                                        <div class="mt-1 text-[10px] text-emerald-600 font-bold"><i class="fas fa-lock mr-1"></i>Data Terkunci</div>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    @if($report->status == 'approved')
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-emerald-100 text-emerald-800">Approved</span>
+                                    @elseif($report->status == 'draft')
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Draft</span>
+                                    @else
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Rejected</span>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
                                     {{ number_format($report->produksi_telur_kg, 2) }}
@@ -134,25 +158,25 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                     <div class="flex items-center justify-center gap-2">
-                                        <a href="{{ route('daily-reports.edit', $report) }}"
-                                            class="text-blue-600 hover:text-blue-900 transition-colors" title="Edit">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                            </svg>
-                                        </a>
-                                        <form action="{{ route('daily-reports.destroy', $report) }}" method="POST"
-                                            onsubmit="return confirm('Yakin ingin menghapus data ini?');" class="inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900 transition-colors"
-                                                title="Hapus">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
+                                        @if(auth()->user()->isManager() && ($report->status == 'draft' || $report->status == 'rejected'))
+                                            <!-- Approve Button (SweetAlert) -->
+                                            <button type="button" onclick="confirmApprove('{{ route('daily-reports.approve', $report) }}')" class="text-emerald-500 hover:text-emerald-800 transition-colors" title="Approve Laporan">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                             </button>
-                                        </form>
+                                            <!-- Reject Button (SweetAlert) -->
+                                            <button type="button" onclick="confirmReject('{{ route('daily-reports.reject', $report) }}')" class="text-orange-500 hover:text-orange-800 transition-colors" title="Tolak Laporan">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                            </button>
+                                        @endif
+                                        
+                                        @if($report->status !== 'approved')
+                                            <a href="{{ route('daily-reports.edit', $report) }}" class="text-blue-600 hover:text-blue-900 transition-colors" title="Lihat/Edit & Bukti">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                            </a>
+                                            <button type="button" onclick="confirmDelete('{{ route('daily-reports.destroy', $report) }}')" class="text-red-600 hover:text-red-900 transition-colors" title="Hapus">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                            </button>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -173,7 +197,7 @@
 
                         @if($reports->count() > 0)
                             <tr class="bg-gradient-to-r from-emerald-100 to-teal-100 font-bold">
-                                <td colspan="4" class="px-6 py-4 text-right text-sm uppercase">TOTAL:</td>
+                                <td colspan="5" class="px-6 py-4 text-right text-sm uppercase">TOTAL:</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-emerald-700">
                                     Rp {{ number_format($reports->sum('total_pendapatan_telur'), 0, ',', '.') }}
                                 </td>
@@ -202,4 +226,132 @@
             @endif
         </div>
     </div>
+
+    <!-- Hidden form for SweetAlert Actions -->
+    <form id="actionForm" method="POST" style="display: none;">
+        @csrf
+        <input type="hidden" name="_method" id="actionMethod" value="PUT">
+        <input type="hidden" name="rejection_note" id="actionRejectionNote" value="">
+    </form>
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    const actionForm = document.getElementById('actionForm');
+    const methodInput = document.getElementById('actionMethod');
+    const noteInput = document.getElementById('actionRejectionNote');
+
+    function confirmApprove(url) {
+        Swal.fire({
+            title: 'Approve Laporan?',
+            html: '<p class="text-slate-500 leading-relaxed font-medium">Data yang disetujui akan <strong class="text-slate-800 font-bold">mengunci laporan stok pakan</strong> di gudang dan masuk ke <strong class="text-slate-800 font-bold">Executive Dashboard</strong>.</p>',
+            icon: 'question',
+            iconColor: '#10B981',
+            showCancelButton: true,
+            confirmButtonText: '<i class="fas fa-check-circle mr-2"></i> Ya, Approve!',
+            cancelButtonText: 'Batal',
+            buttonsStyling: false,
+            customClass: {
+                popup: 'rounded-3xl shadow-2xl p-4 border border-slate-100',
+                title: 'text-2xl font-black text-slate-700 mt-2 mb-1',
+                htmlContainer: 'text-sm mt-2 mb-4',
+                icon: 'border-0 bg-emerald-50 rounded-full scale-[1.15] p-2 mt-4',
+                confirmButton: 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-emerald-500/30 transform hover:-translate-y-0.5 transition-all duration-300',
+                cancelButton: 'bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 px-6 rounded-xl shadow-sm transition-colors ml-3',
+                actions: 'mt-6 w-full flex justify-center gap-3'
+            },
+            backdrop: `rgba(15, 23, 42, 0.7)`,
+            didOpen: () => {
+                const backdrop = document.querySelector('.swal2-container');
+                if(backdrop) backdrop.style.backdropFilter = 'blur(5px)';
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                actionForm.action = url;
+                methodInput.value = 'PUT';
+                actionForm.submit();
+            }
+        });
+    }
+
+    function confirmReject(url) {
+        Swal.fire({
+            title: 'Kembalikan Laporan?',
+            input: 'textarea',
+            inputLabel: 'Berikan alasan penolakan untuk dikoreksi pekerja:',
+            inputPlaceholder: 'Contoh: Bukti foto timbangan kurang jelas...',
+            inputAttributes: {
+                'aria-label': 'Alasan penolakan'
+            },
+            icon: 'warning',
+            iconColor: '#F59E0B',
+            showCancelButton: true,
+            confirmButtonText: '<i class="fas fa-undo mr-2"></i> Kembalikan Laporan',
+            cancelButtonText: 'Batal',
+            buttonsStyling: false,
+            customClass: {
+                popup: 'rounded-3xl shadow-2xl p-4 border border-slate-100',
+                title: 'text-2xl font-black text-slate-700 mt-2 mb-1',
+                htmlContainer: 'text-sm mt-2',
+                input: 'w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-slate-50 font-medium',
+                inputLabel: 'text-sm font-bold text-slate-600 text-left mb-2',
+                icon: 'border-0 bg-orange-50 rounded-full scale-[1.15] p-2 mt-4',
+                confirmButton: 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-orange-500/30 transform hover:-translate-y-0.5 transition-all duration-300',
+                cancelButton: 'bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 px-6 rounded-xl shadow-sm transition-colors ml-3',
+                actions: 'mt-6 w-full flex justify-center gap-3'
+            },
+            backdrop: `rgba(15, 23, 42, 0.7)`,
+            didOpen: () => {
+                const backdrop = document.querySelector('.swal2-container');
+                if(backdrop) backdrop.style.backdropFilter = 'blur(5px)';
+            },
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Alasan revisi wajib diisi agar pekerja bisa memperbaiki!'
+                }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                actionForm.action = url;
+                methodInput.value = 'PUT';
+                noteInput.value = result.value;
+                actionForm.submit();
+            }
+        });
+    }
+
+    function confirmDelete(url) {
+        Swal.fire({
+            title: 'Hapus Laporan?',
+            html: '<p class="text-slate-500 font-medium">Data yang dihapus (beserta gambar bukti fisiknya) <strong class="text-red-500">tidak dapat dikembalikan!</strong></p>',
+            icon: 'error',
+            iconColor: '#EF4444',
+            showCancelButton: true,
+            confirmButtonText: '<i class="fas fa-trash-alt mr-2"></i> Ya, Hapus!',
+            cancelButtonText: 'Batal',
+            buttonsStyling: false,
+            customClass: {
+                popup: 'rounded-3xl shadow-2xl p-4 border border-slate-100',
+                title: 'text-2xl font-black text-slate-700 mt-2 mb-1',
+                htmlContainer: 'text-sm mt-2 mb-4',
+                icon: 'border-0 bg-red-50 rounded-full scale-[1.15] p-2 mt-4',
+                confirmButton: 'bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-red-500/30 transform hover:-translate-y-0.5 transition-all duration-300',
+                cancelButton: 'bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 px-6 rounded-xl shadow-sm transition-colors ml-3',
+                actions: 'mt-6 w-full flex justify-center gap-3'
+            },
+            backdrop: `rgba(15, 23, 42, 0.7)`,
+            didOpen: () => {
+                const backdrop = document.querySelector('.swal2-container');
+                if(backdrop) backdrop.style.backdropFilter = 'blur(5px)';
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                actionForm.action = url;
+                methodInput.value = 'DELETE';
+                actionForm.submit();
+            }
+        });
+    }
+</script>
+@endpush

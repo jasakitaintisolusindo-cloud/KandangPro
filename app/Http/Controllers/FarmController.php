@@ -7,6 +7,16 @@ use Illuminate\Http\Request;
 
 class FarmController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (!auth()->user()->canAccess('farms')) {
+                abort(403, 'Anda tidak memiliki hak akses ke halaman Master Peternakan.');
+            }
+            return $next($request);
+        });
+    }
+
     /**
      * Display a listing of the resource.
      */

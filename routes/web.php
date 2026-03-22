@@ -41,6 +41,8 @@ Route::middleware('auth')->group(function () {
 
     // Daily Reports
     Route::get('/daily-reports/export', [DailyReportController::class, 'export'])->name('daily-reports.export');
+    Route::put('/daily-reports/{dailyReport}/approve', [DailyReportController::class, 'approve'])->name('daily-reports.approve');
+    Route::put('/daily-reports/{dailyReport}/reject', [DailyReportController::class, 'reject'])->name('daily-reports.reject');
     Route::resource('daily-reports', DailyReportController::class)->names('daily-reports');
 
     // Coops & Farms
