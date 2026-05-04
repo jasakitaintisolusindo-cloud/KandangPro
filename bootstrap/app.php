@@ -11,7 +11,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        $middleware->alias([
+            'check.farm'   => \App\Http\Middleware\CheckFarmAccess::class,
+            'check.coop'   => \App\Http\Middleware\CheckCoopAccess::class,
+            'check.supply' => \App\Http\Middleware\CheckSupplyAccess::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
